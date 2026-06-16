@@ -23,6 +23,7 @@ Context: Build-once-use-many retrofit + GitHub org cleanup (joestechsolutions=wo
 - [x] Add .gitignore (legacy/ is local-only) + AGENTS.md note in archive-salon-app. Committed locally as af46ba8 — NOT PUSHED (waits for org transfer)
 - [x] Fix hermes-health.sh: backup dir now uses fallback (`~/.local/backups/hermes` when `/var/backups` not writable) matching hermes-backup.sh; check_http() now accepts space-separated code lists; SSH/RPC port 22/135 excluded from "exposed" check (WSL host ports); iptables warning downgraded to "iptables not readable (WSL)" instead of "ACCEPT (permissive)" — all checks now pass
 - [x] Create systemd timer hermes-daily-backup.timer (04:00 daily, RandomDelaySec 10min) — 2 backups now exist, will run nightly going forward
+- [x] Open hermes-forge PR #1: fix/remove-home-lurkr-hardcode (was a stale branch from prior session with no PR; opened it cleanly, 2 files, 9+ 6-)
 
 ## blocked_needs_jo_browser
 - [ ] Archive joblas/vans-archive-hair-salon-questionaire — actually `joestechsolutions/vans-archive-hair-salon-questionaire` (the questionnaire source repo) — Settings → ⚠️ Archive
@@ -35,7 +36,7 @@ Context: Build-once-use-many retrofit + GitHub org cleanup (joestechsolutions=wo
 - [ ] Delete joblas/jts-pilot-zw (duplicate of joestechsolutions one)
 - [ ] Delete joblas/jts-pilot-intake-template (marked REPO RENAMED)
 - [ ] Delete joblas/jts-pilot-demo-client (test of spin-up, README still says "this is a template")
-- [ ] Review + merge PR fix/remove-home-lurkr-hardcode on hermes-forge
+- [ ] Review + merge PR #1 fix/remove-home-lurkr-hardcode on hermes-forge
 
 ## blocked_needs_jo_decision
 - [ ] (RESOLVED) Was the force-push to joblas/vans-app intentional? YES — Joe confirmed Expo MVP is the new canonical home, questionnaire is archive material
