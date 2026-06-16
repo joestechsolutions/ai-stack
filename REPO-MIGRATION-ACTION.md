@@ -18,9 +18,20 @@ it). You can `git push` to publish any unpushed commits.
 
 ### 2. Migrate `joblas/joestechsolutions-nextjs` → `joestechsolutions/jts-site`
 
-- Go to https://github.com/joblas/joestechsolutions-nextjs/settings
-- Transfer → owner `joestechsolutions`, name `joestechsolutions-nextjs`
-- After transfer, rename to `jts-site` (Settings → Rename, or `gh repo rename jts-site --repo joestechsolutions/joestechsolutions-nextjs`)
+**⚠️ This is the LIVE company site (`https://www.joestechsolutions.com`). Read `~/ai-stack/JTS-SITE-TRANSFER-PLAN.md` BEFORE doing this transfer.** Zero-downtime plan with rollback steps.
+
+Short version:
+1. Transfer `joblas/joestechsolutions-nextjs` to `joestechsolutions`, keep name as `joestechsolutions-nextjs` (don't rename yet)
+2. After transfer, rename to `jts-site` in the new location
+3. Re-link Vercel: dashboard → joestechsolutions-nextjs project → Settings → Git → disconnect from `joblas/...`, connect to `joestechsolutions/jts-site`
+4. DO NOT trigger a redeploy — the current prod build keeps serving the site
+
+Then update the local clone at `~/security-scans/jts-site/joestechsolutions-nextjs`:
+```bash
+cd ~/security-scans/jts-site/joestechsolutions-nextjs
+git remote set-url origin https://github.com/joestechsolutions/jts-site.git
+git fetch origin
+```
 
 ### 3. Delete 3 `joblas/*` JTS pilot duplicates (now safe)
 
