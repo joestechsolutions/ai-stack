@@ -60,3 +60,21 @@ git push origin master  # or main
 - `gh repo transfer` doesn't exist (it was a hallucination)
 - The transfer API requires **admin rights on the source repo** — the `joestechsolutions` gh account is the destination, but only the owner of `joblas` (you, Joe) can initiate a transfer out
 - Deletion of `joblas/*` repos requires the `delete_repo` scope on the `joblas` account, which the active `joestechsolutions` gh session doesn't have
+
+---
+
+## Additional findings from this session
+
+### Already done in this session ✓
+
+- ✅ **`joestechsolutions/jts-pilot-zw`** — added `config.yaml` documenting its current customizations. No hardcode change (live form, ZW-specific values are correct as-is).
+- ✅ **`joestechsolutions/hermes-forge`** — opened PR `fix/remove-home-lurkr-hardcode` (branch on origin). Removes `/home/lurkr` hardcode from `dashboard/backend/main.py` (now uses `Path(__file__).parent.parent / "frontend" / "dist"`) and `scripts/hermes-sync.sh` (now derives `REPO_DIR` from `$HOME`). Closes one item in PRODUCT-KILL-ANALYSIS.md. Review + merge: https://github.com/joestechsolutions/hermes-forge/pull/new/fix/remove-home-lurkr-hardcode
+
+### New "to delete" candidates (browser action)
+
+- **`joblas/jts-pilot-demo-client`** — looks like a test of the spin-up script. README still says "This is a template repo, not a real client form" — it was never customized. Safe to delete.
+- **`joblas/skateboard-workshop-app`** — single-file 103KB static HTML, 55-byte README. Classify as PERSONAL (hobby skate project), not work. Stays at joblas, no action needed.
+
+### Other small cleanups needed
+
+- **`~/jts-pilot-zw` (local clone)** — points to `joblas/jts-pilot-zw` (the redirect one). After you delete the joblas one, re-point or delete the local clone too. The canonical one is at `~/jts-pilot-zw-org` and is already pointed at joestechsolutions.
