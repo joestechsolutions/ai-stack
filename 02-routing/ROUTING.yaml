@@ -1,0 +1,123 @@
+# ROUTING.yaml — the single source of truth for "which model handles what"
+#
+# Why this file exists:
+#   When deepseek-v4-flash gets replaced by deepseek-v5, you change ONE line here
+#   (or in the fallback chain) and every cron / skill / delegate_task that points
+#   to "cron:default" picks it up. Agents and frameworks are consumable;
+#   this routing table is the architecture.
+#
+# Schema:
+#   task_kind:    logical task type (cron:default, cron:weekly, agent:heavy, agent:cheap, ...)
+#   model:        primary model identifier
+#   provider:     provider name (must exist in ~/.hermes/config.yaml providers: section)
+#   skills:       skills auto-loaded for this task kind
+#   toolsets:     tool surface exposed to the agent
+#   fallback:     ordered list of (provider, model) pairs tried on primary failure
+#   notes:        human-readable reasoning — what this tier is good/bad at
+#
+# Provider notes (2026-06-16):
+#   nvidia/deepseek-v4-flash  — fast, free, good for short structured tasks. Hits 429 under
+#                                concurrent load (>2 simultaneous calls).
+#   ollama-launch/*           — local ollama + Ollama Cloud. Cloud models are the default
+#                                for chat/agent work; local models only for offline/cheap
+#                                structured output (bakeoff, vision, etc.).
+#   custom:minimax-m3:cloud   — primary chat model. Default for interactive Telegram
+#                                sessions. (Note: agentic-heavy work goes to fcc.)
+
+task_routing:
+
+  # ─── Cron jobs (no human in loop, time-bounded) ────────────────────────
+  cron:default: &cron_default
+    model: deepseek-ai/deepseek-v4-flash
+    provider: nvidia
+    skills: []            # cron jobs attach their own skill via the job config
+    toolsets: [terminal, file]
+    fallback:
+      - provider: ollama-launch
+        model: kimi-k2.6:cloud
+      - provider: ollama-launch
+        model: gpt-oss:20b-cloud
+    notes: |
+      Cheap/fast tier for short structured cron jobs (briefs, drafts, sweeps).
+      MUST tolerate rate limits — fallback chain has 3 cloud models from
+      different families to avoid single-provider outage cascades.
+
+  cron:heavy:
+    model: minimax-m3:cloud
+    provider: custom:minimax-m3:cloud
+    skills: [joe-content-lane]
+    toolsets: [terminal, file]
+    fallback:
+      - provider: nvidia
+        model: deepseek-ai/deepseek-v4-flash
+    notes: |
+      Weekly jobs that need 3-question dialogue (Quadient check-in).
+      Falls back to deepseek for single-shot delivery.
+
+  # ─── Interactive agent (Telegram / API sessions) ──────────────────────
+  agent:default:
+    model: minimax-m3:cloud
+    provider: custom:minimax-m3:cloud
+    skills: [joe-cto-posture]    # voice + tier-routing + posture
+    toolsets: [terminal, file, web, kanban, browser, cronjob]
+    fallback:
+      - provider: ollama-launch
+        model: kimi-k2.6:cloud
+      - provider: ollama-launch
+        model: qwen3.5:cloud
+    notes: |
+      The default for Telegram DM and API sessions. Cheap-ish cloud model
+      with full tool surface; escalates to fcc for multi-step coding work
+      (handled at the agent level, not the model level).
+
+  # ─── Subagent / fcc delegation ───────────────────────────────────────
+  agent:coding:
+    model: fcc/claude-sonnet-4
+    provider: anthropic
+    skills: [superpowers:writing-plans, superpowers:test-driven-development]
+    toolsets: [terminal, file, web, browser, kanban, gitnexus]
+    fallback: []
+    notes: |
+      Multi-step coding work goes through the fcc harness (port :8082).
+      The fcc proxy handles model selection internally (Opus / Sonnet / Haiku
+      per task). Use delegate_task(goal=..., toolsets=[...]) for all coding
+      work — never code directly in the main agent.
+
+  # ─── Cheap structured output (bakeoffs, parsers, validators) ─────────
+  agent:cheap:
+    model: gpt-oss:20b-cloud
+    provider: ollama-launch
+    skills: []
+    toolsets: [terminal, file]
+    fallback:
+      - provider: ollama-launch
+        model: qwen3.5:cloud
+    notes: |
+      Structured-output tasks (bakeoff scoring, JSON extraction, linting).
+      Cheaper than deepseek for this workload; doesn't compete for NVIDIA
+      rate-limit budget.
+
+# ─── Live binding (read-only, generated) ──────────────────────────────
+# These are mirrored from ~/.hermes/config.yaml and the cron job configs.
+# Source of truth for these still lives there; this is documentation.
+live_bindings:
+  config_yaml: 02-routing/hermes-config.yaml          # symlink
+  cron_jobs:   02-routing/cron-jobs.json              # symlink
+  fallback_chain: 02-routing/hermes-config.yaml#fallback_providers
+
+# ─── Cron → routing table (derived) ──────────────────────────────────
+# Updated whenever a cron job's model: field changes.
+cron_to_routing:
+  system-security-sweep:        cron:default
+  content_draft:                cron:default
+  morning_brief:                cron:default
+  evening_plan:                 cron:default
+  local_model_bakeoff_weekly:   cron:default
+  Quadient Weekly Check-in:     cron:heavy
+
+# ─── Migration cheatsheet ────────────────────────────────────────────
+# When a model dies, the change is:
+#   1. Update providers: section in ~/.hermes/config.yaml
+#   2. Update this file (or just the cron_jobs JSON, if it's a cron change)
+#   3. Restart: systemctl --user restart hermes-gateway
+#   4. Verify: bash ~/hermes-health.sh

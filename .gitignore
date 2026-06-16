@@ -1,0 +1,31 @@
+# ai-stack .gitignore
+#
+# This tree mixes symlinks (read-only views) with our own content.
+# We commit the .md / .yaml we author, and we DON'T follow symlinks into
+# the live data dirs (those have their own .gitignore in their home).
+
+# Symlinked dirs (live data, versioned elsewhere)
+04-reference/
+05-artifacts/cron-output/live
+05-artifacts/kanban/live
+
+# Symlinked config (we author ROUTING.yaml alongside these, no need to track both)
+02-routing/hermes-config.yaml
+02-routing/cron-jobs.json
+
+# Working artifacts — versioned manually, not in this git repo
+05-artifacts/work/*
+!05-artifacts/work/.gitkeep
+
+# Logs
+*.log
+*.log.*
+*.jsonl
+.errors.log
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tmp

@@ -1,0 +1,103 @@
+# Cron job contracts — what each job does, what it expects, what it delivers
+#
+# The actual prompts live in ~/.hermes/cron/jobs.json (read-only symlink at
+# 02-routing/cron-jobs.json). This file is the HUMAN-READABLE INDEX:
+# what each job is for, what it costs, what success looks like, and what to
+# change when a job misbehaves.
+
+jobs:
+
+  - id: 27ff32f88daf
+    name: system-security-sweep
+    schedule: "0 3 * * *"  # daily 03:00
+    tier: cron:default
+    cost: ~$0/day (NVIDIA free tier)
+    purpose: |
+      Run security-sweep.sh, summarize warnings, flag RED items.
+    success: 1-3 lines in Telegram, no red items.
+    failure_modes:
+      - sweep script timeout (>180s) → cron reschedules, missed run
+      - 429 from nvidia → fallback to kimi-k2.6:cloud
+    debug: tail -50 ~/.hermes/cron/output/27ff32f88daf/*.json
+
+  - id: fdd6ab891792
+    name: content_draft
+    schedule: "0 7 * * *"  # daily 07:00
+    tier: cron:default
+    skill: joe-content-lane
+    cost: ~$0/day
+    purpose: |
+      One LinkedIn/Twitter draft, 220-260 chars, voice: direct/peer-to-peer.
+    success: one draft, end marker DRAFT_READY.
+    failure_modes:
+      - 429 from nvidia at 7:00 (concurrent with morning_brief at 7:30) — see
+        ROUTING.yaml fallback chain
+      - draft over 260 chars → truncated and discarded
+    debug: tail -50 ~/.hermes/cron/output/fdd6ab891792/*.json
+
+  - id: c20c8c54f140
+    name: morning_brief
+    schedule: "30 7 * * *"  # daily 07:30
+    tier: cron:default
+    skill: joe-content-lane
+    cost: ~$0/day
+    purpose: |
+      TTS-friendly 3-item brief, max 600 chars, end marker BRIEF_READY.
+    success: 3 items (operational/tactical/strategic), under 600 chars.
+    failure_modes:
+      - 429/500 history on 2026-06-16 (deepseek 429 → gpt-oss 500). Now mitigated
+        by adding kimi-k2.6:cloud to the fallback chain. See ROUTING.yaml.
+    debug: tail -50 ~/.hermes/cron/output/c20c8c54f140/*.json
+
+  - id: d8c7a037f405
+    name: evening_plan
+    schedule: "30 17 * * *"  # daily 17:30
+    tier: cron:default
+    skill: personal/joe-content-lane
+    cost: ~$0/day
+    purpose: |
+      3-item evening plan, 450-580 chars, end marker PLAN_READY.
+    success: 3 lanes (Quadient / JTS / Path C), each with action.
+    failure_modes: same as morning_brief.
+    debug: tail -50 ~/.hermes/cron/output/d8c7a037f405/*.json
+
+  - id: 359984dedd05
+    name: local_model_bakeoff_weekly
+    schedule: "0 4 * * 0"  # Sun 04:00
+    tier: cron:default
+    cost: ~$0/week (orchestration on NVIDIA, models-under-test on local Ollama)
+    purpose: |
+      Run bake-off harness against gemma4:e2b and qwen3.5:4b; compare to
+      last week's scores; if |delta| > 0.5, alert Joe; otherwise stay silent.
+    success: 1 status line, silent on no-regression weeks.
+    failure_modes:
+      - orchestrator model truncation (was gemma4:e2b, now deepseek-v4-flash)
+      - ollama down / model not pulled
+    debug:
+      - tail -50 ~/.hermes/cron/output/359984dedd05/*.json
+      - cat ~/.local/share/hermes/bakeoff/results/ | tail
+
+  - id: c41d84e65c3b
+    name: Quadient Weekly Check-in
+    schedule: "0 18 * * 0"  # Sun 18:00
+    tier: cron:heavy
+    cost: ~$0/week (uses minimax-m3:cloud for 3-question dialogue)
+    purpose: |
+      Weekly check-in: ask 3 questions, wait for answers, give tactical
+      recommendations tied to the 100-day plan phase.
+    success: 3 questions asked, 1-line answers, end with tactical recap.
+    failure_modes:
+      - if minimax-m3:cloud is down, falls back to deepseek-v4-flash but
+        loses the multi-turn dialogue quality
+    debug: tail -50 ~/.hermes/cron/output/c41d84e65c3b/*.json
+
+# ─── Operational notes ───────────────────────────────────────────────
+operational:
+  cleanup: |
+    Daily cleanup at 00:00 deletes cron output files older than 7 days.
+    Service: hermes-cron-cleanup.timer / hermes-cron-cleanup.service
+  log_rotation: |
+    Logrotate config at ~/.hermes/scripts/hermes-logs.logrotate.
+    Daily at 10M, keep 7, compress.
+  total_runs_per_day: ~6
+  total_runs_per_week: ~42
