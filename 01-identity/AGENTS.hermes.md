@@ -1,1 +1,0 @@
-/home/lurkr/.hermes/AGENTS.md
