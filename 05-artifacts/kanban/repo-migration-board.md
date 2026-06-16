@@ -18,9 +18,17 @@ Context: Build-once-use-many retrofit + GitHub org cleanup (joestechsolutions=wo
 - [x] Re-clone JTS site safety-net to ~/projects/security-scans/jts-site/joestechsolutions-nextjs/ (955MB, master @ 27878564)
 - [x] Discover vans-app has 3 repos: joblas/vans-app (Expo MVP, force-pushed 2026-06-16), joestechsolutions/vans-app (301 redirect), joestechsolutions/vans-archive-hair-salon-questionaire (intake form source). Intake form LIVE at vans-app.pages.dev via Cloudflare Pages. See VANS-APP-TRANSFER-PLAN.md
 - [x] Fix local archive-salon-app remote: was pointing at joestechsolutions/vans-app (redirect), now points at joblas/vans-app. In sync, no work lost.
+- [x] Snapshot full intake form to ~/projects/archive-salon-app/legacy/questionnaire/ (gitignored, local-only reference): form HTML + served bytes + Cloudflare Worker + logos + ARCHIVE-NOTES.md
+- [x] Decide: intake form is ARCHIVE MATERIAL (Joe: "we don't need that questionnaire anymore, we already got that information from her"). Form submissions went to joe@joestechsolutions.com via Resend (in email archive, not in repo)
+- [x] Add .gitignore (legacy/ is local-only) + AGENTS.md note in archive-salon-app. Committed locally as af46ba8 — NOT PUSHED (waits for org transfer)
 
 ## blocked_needs_jo_browser
-- [ ] Transfer joblas/vans-app → joestechsolutions/vans-app (Settings → Transfer) — **verify Cloudflare Pages deploy source FIRST**
+- [ ] Archive joblas/vans-archive-hair-salon-questionaire — actually `joestechsolutions/vans-archive-hair-salon-questionaire` (the questionnaire source repo) — Settings → ⚠️ Archive
+- [ ] Delete vans-app.pages.dev Cloudflare Pages project (Workers & Pages → vans-app → Settings → Delete)
+- [ ] Delete joestechsolutions/vans-app redirect (Settings → ⚠️ Delete) — required before transfer can land at the canonical name
+- [ ] Transfer joblas/vans-app → joestechsolutions/vans-app (Settings → Transfer) — NOW SAFE: form is archive material, no live deploys
+- [ ] After transfer: push local commits af46ba8 (.gitignore + AGENTS.md update) to new joestechsolutions/vans-app
+- [ ] After transfer: optionally delete joblas/vans-app source (code is at joestechsolutions now)
 - [ ] Transfer joblas/joestechsolutions-nextjs → joestechsolutions/jts-site (SEE JTS-SITE-TRANSFER-PLAN.md for 4-stage zero-downtime sequence)
 - [ ] Delete joblas/jts-pilot-zw (duplicate of joestechsolutions one)
 - [ ] Delete joblas/jts-pilot-intake-template (marked REPO RENAMED)
@@ -28,6 +36,4 @@ Context: Build-once-use-many retrofit + GitHub org cleanup (joestechsolutions=wo
 - [ ] Review + merge PR fix/remove-home-lurkr-hardcode on hermes-forge
 
 ## blocked_needs_jo_decision
-- [ ] vans-app.pages.dev: which GitHub repo is Cloudflare watching? (CF admin needed — check Pages project → Settings → Builds → Connected repository)
-- [ ] Is the live intake form still wanted, or does the Expo MVP supersede it?
-- [ ] Was the force-push to joblas/vans-app intentional? (Confirms it as the new canonical home)
+- [ ] (RESOLVED) Was the force-push to joblas/vans-app intentional? YES — Joe confirmed Expo MVP is the new canonical home, questionnaire is archive material
