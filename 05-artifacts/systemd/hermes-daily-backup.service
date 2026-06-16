@@ -1,0 +1,10 @@
+[Unit]
+Description=Hermes stack daily backup (MemPalace + Hermes + OpenDesign + OpenWebUI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/hermes-backup.sh
+Nice=19
+IOSchedulingClass=idle

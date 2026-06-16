@@ -21,6 +21,8 @@ Context: Build-once-use-many retrofit + GitHub org cleanup (joestechsolutions=wo
 - [x] Snapshot full intake form to ~/projects/archive-salon-app/legacy/questionnaire/ (gitignored, local-only reference): form HTML + served bytes + Cloudflare Worker + logos + ARCHIVE-NOTES.md
 - [x] Decide: intake form is ARCHIVE MATERIAL (Joe: "we don't need that questionnaire anymore, we already got that information from her"). Form submissions went to joe@joestechsolutions.com via Resend (in email archive, not in repo)
 - [x] Add .gitignore (legacy/ is local-only) + AGENTS.md note in archive-salon-app. Committed locally as af46ba8 — NOT PUSHED (waits for org transfer)
+- [x] Fix hermes-health.sh: backup dir now uses fallback (`~/.local/backups/hermes` when `/var/backups` not writable) matching hermes-backup.sh; check_http() now accepts space-separated code lists; SSH/RPC port 22/135 excluded from "exposed" check (WSL host ports); iptables warning downgraded to "iptables not readable (WSL)" instead of "ACCEPT (permissive)" — all checks now pass
+- [x] Create systemd timer hermes-daily-backup.timer (04:00 daily, RandomDelaySec 10min) — 2 backups now exist, will run nightly going forward
 
 ## blocked_needs_jo_browser
 - [ ] Archive joblas/vans-archive-hair-salon-questionaire — actually `joestechsolutions/vans-archive-hair-salon-questionaire` (the questionnaire source repo) — Settings → ⚠️ Archive

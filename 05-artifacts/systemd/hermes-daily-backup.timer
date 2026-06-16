@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily backup of Hermes stack data (MemPalace, configs, OpenWebUI)
+
+[Timer]
+# 04:00 daily — well after the 02:00 ai-stack push and 03:00 system-security-sweep
+OnCalendar=*-*-* 04:00:00
+Persistent=true
+AccuracySec=15min
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target
