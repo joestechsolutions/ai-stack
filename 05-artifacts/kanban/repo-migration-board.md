@@ -24,7 +24,7 @@ Context: Build-once-use-many retrofit + GitHub org cleanup (joestechsolutions=wo
 
 ## blocked_needs_jo_browser
 - [ ] Archive joblas/vans-archive-hair-salon-questionaire — actually `joestechsolutions/vans-archive-hair-salon-questionaire` (the questionnaire source repo) — Settings → ⚠️ Archive
-- [ ] Delete vans-app.pages.dev Cloudflare Pages project (Workers & Pages → vans-app → Settings → Delete)
+- [ ] Delete vans-app.pages.dev Cloudflare Pages project (Workers & Pages → vans-app → Settings → Delete) — **BLOCKED: CF OAuth token expired 2025-10-19, need Joe to re-auth wrangler or paste API token at desk**
 - [ ] Delete joestechsolutions/vans-app redirect (Settings → ⚠️ Delete) — required before transfer can land at the canonical name
 - [ ] Transfer joblas/vans-app → joestechsolutions/vans-app (Settings → Transfer) — NOW SAFE: form is archive material, no live deploys
 - [ ] After transfer: push local commits af46ba8 (.gitignore + AGENTS.md update) to new joestechsolutions/vans-app
