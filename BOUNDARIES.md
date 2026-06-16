@@ -13,25 +13,30 @@
 
 - `joestechsolutions/hermes-forge` — Hermes stack forge
 - `joestechsolutions/ai-platform-bootloader` — one-command deploy
-- `joestechsolutions/jts-pilot-intake-template` — JTS client intake template
+- `joestechsolutions/jts-pilot-intake-template` — JTS client intake template (RETROFITED 2026-06-16: 3 placeholders + config.template.yaml + For-clients section, per build-once-use-many)
 - `joestechsolutions/jts-pilot-zw` — ZW Home Construction pilot
-- `joestechsolutions/vans-archive-hair-salon-questionaire` — Van's app
+- `joestechsolutions/vans-archive-hair-salon-questionaire` — Van's app intake
 - `joestechsolutions/whisper-walkie` — push-to-talk voice typing
 - `joestechsolutions/semantic-galaxy` — 3D embedding visualizer
 - `joestechsolutions/nick-cleaning-assistant`
 - `joestechsolutions/sellerdoor` (private fork)
 - `joestechsolutions/aistudio-skate-workshop-app`
+- `joestechsolutions/ai-stack` — context architecture (created 2026-06-16, daily 02:00 push cron, 5 commits)
 
 ## What's under joblas (personal)
 
 - `joblas/career-ops` — Path C portfolio lead
 - `joblas/renfaire-directory` — collaborator work with ryanadams20
 - `joblas/skate-workshop-clean` — personal
+- `joblas/skateboard-workshop-app` — hobby skate project (1-file static, 55B README). CLASSIFY: personal. Stays at joblas, no action.
 - `joblas/jts-pilot-zw` — **DUPLICATE**, should be deleted (real one is under joestechsolutions)
-- `joblas/jts-pilot-intake` — **DUPLICATE**, should be deleted
+- `joblas/jts-pilot-intake` — **DUPLICATE**, should be deleted (was a stale rename, now removed)
 - `joblas/jts-pilot-intake-template` — **DUPLICATE**, should be deleted
-- `joblas/vans-app` — **WRONG ORG**, should be migrated to joestechsolutions (client work)
-- `joblas/joestechsolutions-nextjs` — **WRONG ORG**, should be migrated to joestechsolutions (company site code)
+- `joblas/jts-pilot-demo-client` — **STALE TEST** of spin-up script, README still says "This is a template repo". Should be deleted.
+- `joblas/vans-app` — **WRONG ORG**, should be migrated to joestechsolutions (client work — local remote already updated)
+- `joblas/joestechsolutions-nextjs` — **WRONG ORG**, should be migrated to joestechsolutions as `jts-site` (company site code)
+- `joblas/cv-joseph` — personal portfolio site (cloudyjoe.com)
+- `joblas/cbarrgs-vibe-haven`, `joblas/cbarrgs-marketing-agent` — personal creative project
 
 ## When creating a new repo
 
