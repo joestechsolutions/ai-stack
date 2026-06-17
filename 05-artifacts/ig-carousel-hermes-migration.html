@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JTS IG Carousel — Hermes Migration</title>
+<style>
+  :root {
+    --bg: #0A0A0B;
+    --bg-2: #0F0F12;
+    --card: #16161A;
+    --teal: #2DD4BF;
+    --white: #FFFFFF;
+    --muted: #9CA3AF;
+    --border: #1F1F23;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1f;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter Display", "Geist", "SF Pro Display", sans-serif;
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 30px;
+  }
+  h1 {
+    font-size: 18px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 400;
+    max-width: 800px;
+  }
+  .slide {
+    width: 1080px;
+    height: 1080px;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 100px 80px;
+  }
+  /* small badge */
+  .badge {
+    position: absolute;
+    top: 60px;
+    left: 80px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  /* big two-tone headline */
+  .headline {
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .headline .white { color: var(--white); display: block; }
+  .headline .teal { color: var(--teal); display: block; }
+  /* body copy */
+  .body {
+    font-size: 28px;
+    line-height: 1.5;
+    color: var(--white);
+    opacity: 0.85;
+    font-weight: 300;
+    max-width: 800px;
+  }
+  /* code block */
+  .code {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 40px;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 22px;
+    line-height: 1.6;
+    color: var(--white);
+    margin-top: 20px;
+  }
+  .code .comment { color: var(--muted); }
+  .code .teal { color: var(--teal); }
+  .code .white { color: var(--white); }
+  /* stat block */
+  .stat {
+    font-size: 200px;
+    font-weight: 800;
+    color: var(--teal);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .stat-label {
+    font-size: 28px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    margin-top: 12px;
+  }
+  /* footer signature */
+  .footer-mark {
+    position: absolute;
+    bottom: 60px;
+    left: 80px;
+    font-size: 18px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .footer-mark span { color: var(--teal); }
+  .slide-num {
+    position: absolute;
+    bottom: 60px;
+    right: 80px;
+    font-size: 18px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  /* Slide 2 specific: stacked rows */
+  .rows { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 24px 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 22px;
+  }
+  .row .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+  .row .name { color: var(--white); font-weight: 600; }
+  .row .desc { color: var(--muted); font-size: 20px; margin-left: auto; }
+  /* Slide 5 specific: CTA */
+  .cta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 40px;
+    background: var(--teal);
+    color: var(--bg);
+    border-radius: 100px;
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 40px;
+  }
+  .cta-pill::after { content: "→"; font-size: 32px; }
+  /* Slide 3: stat grid */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+  .stat-cell { padding: 32px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+  .stat-cell .num { font-size: 64px; font-weight: 800; color: var(--teal); line-height: 1; }
+  .stat-cell .lbl { font-size: 20px; color: var(--muted); margin-top: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+<h1>JTS IG Carousel — "From 22 Agents to 16 That Compose" (5 slides, 1080×1080 each)</h1>
+
+<!-- SLIDE 1: Hook -->
+<div class="slide" id="slide-1">
+  <div class="badge">Migration case study</div>
+  <div class="headline">
+    <span class="white">I shipped 22 agents</span>
+    <span class="white">to production.</span>
+    <span class="teal">Then I deleted 6.</span>
+  </div>
+  <div class="footer-mark">JOE'S TECH SOLUTIONS · <span>@joestechsolutions</span></div>
+  <div class="slide-num">01 / 05</div>
+</div>
+
+<!-- SLIDE 2: What broke -->
+<div class="slide" id="slide-2">
+  <div class="badge">The problem</div>
+  <div class="headline">
+    <span class="white">Three things</span>
+    <span class="teal">broke at 22.</span>
+  </div>
+  <div class="rows">
+    <div class="row"><div class="dot"></div><div class="name">Director-layer theater</div><div class="desc">4 agents whose only job was reporting</div></div>
+    <div class="row"><div class="dot"></div><div class="name">Handoff multiplication</div><div class="desc">6 hops to send an invoice</div></div>
+    <div class="row"><div class="dot"></div><div class="name">Model-tiering cost</div><div class="desc">Cognitive overhead &gt; API savings</div></div>
+  </div>
+  <div class="footer-mark">JOE'S TECH SOLUTIONS · <span>@joestechsolutions</span></div>
+  <div class="slide-num">02 / 05</div>
+</div>
+
+<!-- SLIDE 3: Stats -->
+<div class="slide" id="slide-3">
+  <div class="badge">After the migration</div>
+  <div class="headline">
+    <span class="white">Same work.</span>
+    <span class="teal">Half the agents.</span>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-cell"><div class="num">16</div><div class="lbl">Specialized agents</div></div>
+    <div class="stat-cell"><div class="num">24/7</div><div class="lbl">Production uptime</div></div>
+    <div class="stat-cell"><div class="num">$100</div><div class="lbl">Monthly cloud spend</div></div>
+    <div class="stat-cell"><div class="num">0</div><div class="lbl">Minutes of my time</div></div>
+  </div>
+  <div class="footer-mark">JOE'S TECH SOLUTIONS · <span>@joestechsolutions</span></div>
+  <div class="slide-num">03 / 05</div>
+</div>
+
+<!-- SLIDE 4: Code -->
+<div class="slide" id="slide-4">
+  <div class="badge">The pattern</div>
+  <div class="headline">
+    <span class="white">Fewer agents.</span>
+    <span class="teal">More delegation.</span>
+  </div>
+  <div class="code">
+<span class="comment">// Old: 22 specialized, no delegation</span>
+<span class="white">agent_1 → agent_2 → agent_3 → agent_4</span>
+<span class="white">  → agent_5 → agent_6 → me</span>
+
+<span class="comment">// New: 16 composing</span>
+<span class="teal">agent.delegate(work)</span>
+<span class="white">  → routes to best fit</span>
+<span class="white">  → returns in 1 hop</span>
+  </div>
+  <div class="footer-mark">JOE'S TECH SOLUTIONS · <span>@joestechsolutions</span></div>
+  <div class="slide-num">04 / 05</div>
+</div>
+
+<!-- SLIDE 5: Takeaway + CTA -->
+<div class="slide" id="slide-5">
+  <div class="badge">The lesson</div>
+  <div class="headline">
+    <span class="white">An org chart is</span>
+    <span class="teal">a design tool.</span>
+    <span class="white">Not a deliverable.</span>
+  </div>
+  <div class="body" style="margin-top: 32px;">
+    I run this for my own business. I build the same for yours. Custom systems — not slide decks.
+  </div>
+  <a class="cta-pill">joestechsolutions.com</a>
+  <div class="footer-mark">JOE'S TECH SOLUTIONS · <span>@joestechsolutions</span></div>
+  <div class="slide-num">05 / 05</div>
+</div>
+
+</body>
+</html>
