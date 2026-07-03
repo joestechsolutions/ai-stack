@@ -13,13 +13,21 @@ The original Step 1.1 said to `mv ~/.fcc/.env ~/ai-stack/02-routing/fcc.env` and
 **PUBLIC** repo with a daily auto-push. The original approach would have pushed the keys
 to public GitHub.
 
-**Corrected design (as implemented):** match the existing `02-routing/hermes-config.yaml`
-pattern — the **real file stays at `~/.fcc/.env`** (gitignored, never committed), and
-`~/ai-stack/02-routing/fcc.env` is a **symlink pointing *to* `~/.fcc/.env`**. ai-stack tracks
-the symlink (mode `120000`), so the live routing config is reachable/diffable from ai-stack
-for backup WITHOUT any secret bytes entering git. Verified: 0 bytes of real secret values
-in any reachable ai-stack commit; `git show HEAD:02-routing/fcc.env` returns the 21-byte
-symlink target path, not env contents.
+**Corrected design (as implemented):** a *tracked-symlink* pattern — the **real file
+stays at `~/.fcc/.env`** (gitignored, never committed), and `~/ai-stack/02-routing/fcc.env`
+is a **symlink pointing *to* `~/.fcc/.env`** that ai-stack **tracks** (git mode `120000`),
+so the live routing config is reachable/diffable/**backed up** from ai-stack WITHOUT any
+secret bytes entering git. Verified: 0 bytes of real secret values in any reachable
+ai-stack commit; `git show HEAD:02-routing/fcc.env` returns the 21-byte symlink target
+path, not env contents.
+
+**Note (do not collapse with `hermes-config.yaml`):** this is *stricter* than the existing
+`02-routing/hermes-config.yaml`, which is `.gitignore`'d (line 13) and **untracked** — a
+pure local symlink with no backup. fcc.env is tracked deliberately so the daily snapshot
+captures the routing pointer. If you ever track `hermes-config.yaml` the same way, first
+check whether `~/.hermes/config.yaml` itself contains secrets. A guard in
+`~/.hermes/scripts/ai-stack-push.sh` aborts the daily push if `02-routing/fcc.env` is ever
+replaced by a regular file (which would stage live keys for public push).
 
 Consequence for Step 1.2: stripping `MODEL_*` from `~/free-claude-code/.env` is a **local,
 gitignored, uncommitted edit** (`.env` is `.gitignore` line 9 — it must never be committed).

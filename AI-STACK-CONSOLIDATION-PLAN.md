@@ -6,7 +6,10 @@
 > real `~/.fcc/.env` into `ai-stack/02-routing/fcc.env` and symlink `~/.fcc/.env` back to it.
 > **That was a security defect** — `~/.fcc/.env` holds live API keys and `joestechsolutions/ai-stack`
 > is a **PUBLIC** repo with a daily auto-push, so the original step would have published the
-> keys. The implemented fix inverts the design to match `02-routing/hermes-config.yaml`:
+> keys. The implemented fix inverts the design to a *tracked-symlink* pattern (stricter than
+> `02-routing/hermes-config.yaml`, which is `.gitignore`'d line 13 and untracked — fcc.env is
+> tracked as mode `120000` so the daily snapshot backs up the routing pointer without secret
+> bytes; do not collapse the two patterns):
 > the **real file stays at `~/.fcc/.env`** (gitignored, never committed) and
 > `ai-stack/02-routing/fcc.env` is a **symlink → `~/.fcc/.env`** (tracked as mode `120000`,
 > no secret bytes in git). Task 2's "commit" step was likewise a defect — `.env` is
