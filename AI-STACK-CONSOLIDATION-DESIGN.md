@@ -124,8 +124,17 @@ Add symlinks matching the existing read-only pattern (siblings of `free-claude-c
 | `04-reference/claude-settings.json` | `~/.claude/settings.json` |
 
 `04-reference` is read-only by convention (ai-stack references these, it does not own
-them). The symlinks make the whole AI stack reachable from one tree and included in the
-daily `git -C ~/ai-stack` snapshot as pointer entries.
+them). The symlinks make the whole AI stack reachable from one tree for **local navigation**.
+
+**⚠️ Correction (2026-07-03, during implementation):** `.gitignore` line 8 ignores the
+entire `04-reference/` directory, so these symlinks are **not git-tracked** and are **not**
+included in the daily snapshot — this is the established pattern (the four pre-existing
+siblings `free-claude-code`, `mempalace`, `obsidian`, `open-design` are also untracked
+local symlinks). The consolidation value here is local reachability (whole stack visible
+under `~/ai-stack/04-reference/`), not backup. If you DO want the symlink pointers backed
+up in git, add a `.gitignore` negation (`!04-reference/*/`) and force-add them — a separate
+decision, not part of this implementation. Do not force-add selectively (it creates an
+inconsistent half-tracked state).
 
 ### Optional follow-up (not required for this change)
 
