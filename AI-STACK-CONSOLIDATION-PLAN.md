@@ -2,6 +2,19 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> ⚠️ **REVISION (2026-07-03, mid-execution):** Task 1's Step 1.1 originally said to move the
+> real `~/.fcc/.env` into `ai-stack/02-routing/fcc.env` and symlink `~/.fcc/.env` back to it.
+> **That was a security defect** — `~/.fcc/.env` holds live API keys and `joestechsolutions/ai-stack`
+> is a **PUBLIC** repo with a daily auto-push, so the original step would have published the
+> keys. The implemented fix inverts the design to match `02-routing/hermes-config.yaml`:
+> the **real file stays at `~/.fcc/.env`** (gitignored, never committed) and
+> `ai-stack/02-routing/fcc.env` is a **symlink → `~/.fcc/.env`** (tracked as mode `120000`,
+> no secret bytes in git). Task 2's "commit" step was likewise a defect — `.env` is
+> `.gitignore`'d; the strip is an uncommitted local edit and `.env` was untracked via
+> commit `f4dd3d53`. Tasks 1 & 2 are complete in this corrected form; Task 3 proceeds as
+> written (its symlinks point at non-secret dirs and are safe). See the design doc's
+> Revision section for full rationale.
+
 **Goal:** Make `~/ai-stack` the single source of truth for the live AI stack by relocating the fcc routing env into `02-routing/` and symlinking the missing AI infra into `04-reference/`.
 
 **Architecture:** Approach A (symlink consolidation) from the approved design doc. No code changes to fcc or Hermes — python-dotenv follows the symlinked env transparently, and `04-reference/` gains read-only symlinks matching the existing pattern. The dual-`.env` footgun is removed by stripping already-dead tier-routing lines from `~/free-claude-code/.env`.

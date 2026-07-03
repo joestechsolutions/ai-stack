@@ -1,8 +1,32 @@
 # AI-Stack Consolidation — Design
 
 **Date:** 2026-07-03
-**Status:** Approved (Approach A) — pending spec review, then implementation
+**Status:** Approved (Approach A) — implemented, with one security-driven correction (see Revision below)
 **Scope:** `~/ai-stack` (this repo) + `~/.fcc/`, `~/free-claude-code/.env`, `~/.claude/`
+
+## ⚠️ Revision (2026-07-03, during implementation) — fcc.env must be a symlink, not a committed file
+
+The original Step 1.1 said to `mv ~/.fcc/.env ~/ai-stack/02-routing/fcc.env` and symlink
+`~/.fcc/.env` back to it — i.e. the **real file** lives in ai-stack (committed) and
+`~/.fcc/.env` is the symlink. **This was wrong.** `~/.fcc/.env` contains live API keys
+(NVIDIA NIM, OpenRouter, Ollama Cloud, Vercel), and `joestechsolutions/ai-stack` is a
+**PUBLIC** repo with a daily auto-push. The original approach would have pushed the keys
+to public GitHub.
+
+**Corrected design (as implemented):** match the existing `02-routing/hermes-config.yaml`
+pattern — the **real file stays at `~/.fcc/.env`** (gitignored, never committed), and
+`~/ai-stack/02-routing/fcc.env` is a **symlink pointing *to* `~/.fcc/.env`**. ai-stack tracks
+the symlink (mode `120000`), so the live routing config is reachable/diffable from ai-stack
+for backup WITHOUT any secret bytes entering git. Verified: 0 bytes of real secret values
+in any reachable ai-stack commit; `git show HEAD:02-routing/fcc.env` returns the 21-byte
+symlink target path, not env contents.
+
+Consequence for Step 1.2: stripping `MODEL_*` from `~/free-claude-code/.env` is a **local,
+gitignored, uncommitted edit** (`.env` is `.gitignore` line 9 — it must never be committed).
+Task 2's "commit" step was a plan defect; the strip is applied to the on-disk gitignored
+file and left uncommitted, which is the correct state for a secrets file. A follow-up
+commit `f4dd3d53` untracked `.env` in `~/free-claude-code` (it had been force-added by
+mistake) so the gitignored file stays out of git going forward.
 
 ## Goal
 
