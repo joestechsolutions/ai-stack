@@ -113,15 +113,55 @@ live_bindings:
   cron_jobs:   02-routing/cron-jobs.json              # symlink
   fallback_chain: 02-routing/hermes-config.yaml#fallback_providers
 
-# ─── Cron → routing table (derived) ──────────────────────────────────
-# Updated whenever a cron job's model: field changes.
+# ─── Cron → tier (derived from ~/.hermes/cron/jobs.json) ─────────────
+# Regenerated 2026-07-28. Each job pins its own model: field — this table is
+# the readable mirror, not the source of truth. Read jobs.json before trusting
+# it. Tier rule: judgement work runs on the reasoning model, execution work on
+# the code model, reflex checks on the cheap model.
 cron_to_routing:
-  system-security-sweep:        cron:default
-  content_draft:                cron:default
-  morning_brief:                cron:default
-  evening_plan:                 cron:default
-  local_model_bakeoff_weekly:   cron:default
-  Quadient Weekly Check-in:     cron:heavy
+
+  # judgement: glm-5.2:cloud — reasoning, strategy, review
+  cmo_weekly_review:              judgement
+  cos_daily_standup:              judgement
+  evening_plan:                   judgement
+  jts_cfo_monthly_review:         judgement
+  jts_coo_weekly_review:          judgement
+  system-security-sweep:          judgement
+  tech_intel_brief:               judgement
+  vp_engineering_sprint_review:   judgement
+  vp_product_monthly_review:      judgement
+  weekly-job-search-sweep:        judgement
+
+  # execution: kimi-k2.7-code:cloud — drafting, code, outbound
+  "Quadient Weekly Check-in":     execution
+  cfo_monthly_expense_scan:       execution
+  content_draft:                  execution
+  jts_cold_email_sender:          execution
+  jts_weekly_success_report:      execution
+  renfaire_content_draft:         execution
+
+  # reflex: gemma4:cloud — cheap recurring checks
+  ig_auto_reply:                  reflex
+  jts_cold_email_reply_check:     reflex
+  spend_caps_enforcement:         reflex
+  vp_infrastructure_daily_health: reflex
+
+  # bench: deepseek-v4-flash:cloud — benchmark harness only
+  local_model_bakeoff_weekly:     bench
+
+  # inherit: no pin — inherits model.default (glm-5.2:cloud)
+  # (cron-failure-watch is no_agent: a script, no model, no tokens. It alerts
+  #  on any job whose run was not ok and re-arms transient failures once.)
+  agent_scorecard:                inherit
+  cron-failure-watch:             inherit
+  daily-update-check:             inherit
+  fcc-upstream-tracker:           inherit
+  gritt-email-watch:              inherit
+  kimi-k3-tier-watch:             inherit
+  skillopt-sleep-nightly:         inherit
+  skillspector_weekly_scan:       inherit
+  weekly-config-sync:             inherit
+  weekly_balance_check:           inherit
 
 # ─── Migration cheatsheet ────────────────────────────────────────────
 # When a model dies, the change is:
