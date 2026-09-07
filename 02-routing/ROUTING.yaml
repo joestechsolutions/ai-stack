@@ -95,7 +95,7 @@ task_routing:
 
   # ─── Subagent / fcc delegation ───────────────────────────────────────
   agent:delegation:
-    model: kimi-k2.7-code:cloud
+    model: deepseek-v4-flash:cloud
     provider: ollama-launch
     skills: [fcc-agent]
     toolsets: [terminal, file, web]
@@ -103,7 +103,8 @@ task_routing:
       - provider: ollama-launch
         model: glm-5.3:cloud
     notes: |
-      config.yaml delegation.model = kimi-k2.7-code:cloud. Per-agent overrides live
+      config.yaml delegation.model = deepseek-v4-flash:cloud (swapped from kimi-k2.7-code
+      2026-09-06, Joe directive — kimi retired from role pins). Per-agent overrides live
       in ~/.hermes/delegation/agents/REGISTRY.yaml (glm-5.3 ×6, qwen3.5 ×2, one each
       kimi-k2.7-code, minimax-m3, gpt-oss:20b, devstral-small-2, deepseek-v4-pro,
       qwen3-coder-next). Goal-mode judge = same model family, JUDGE_MODEL in
@@ -118,8 +119,8 @@ task_routing:
     notes: |
       Multi-step coding work goes through the fcc harness (port :8082). "Model"
       per tier comes from ~/.fcc/.env: MODEL=ollama/glm-5.3:cloud,
-      MODEL_OPUS=ollama/glm-5.3:cloud, MODEL_SONNET=ollama/kimi-k2.7-code:cloud
-      (was kimi-k3:cloud — 404s, fixed 2026-09-06),
+      MODEL_OPUS=ollama/glm-5.3:cloud, MODEL_SONNET=ollama/deepseek-v4-flash:cloud
+      (was kimi-k3:cloud — 404s, fixed 2026-09-06; kimi-k2.7-code same-day swap),
       MODEL_HAIKU=ollama/deepseek-v4-flash:cloud. Use
       delegate_task(goal=..., toolsets=[...]) for all coding work — never code
       directly in the main agent.
