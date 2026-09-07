@@ -1,9 +1,9 @@
 # ROUTING.yaml — the single source of truth for "which model handles what"
 #
 # Why this file exists:
-#   When deepseek-v4-flash gets replaced by deepseek-v5, you change ONE line here
-#   (or in the fallback chain) and every cron / skill / delegate_task that points
-#   to "cron:default" picks it up. Agents and frameworks are consumable;
+#   When glm-5.3-flash gets replaced, you change ONE line here (or in the
+#   fallback chain) and every cron / skill / delegate_task that points to
+#   "cron:default" picks it up. Agents and frameworks are consumable;
 #   this routing table is the architecture.
 #
 # Schema:
@@ -15,112 +15,153 @@
 #   fallback:     ordered list of (provider, model) pairs tried on primary failure
 #   notes:        human-readable reasoning — what this tier is good/bad at
 #
-# Provider notes (2026-06-16):
-#   nvidia/deepseek-v4-flash  — fast, free, good for short structured tasks. Hits 429 under
-#                                concurrent load (>2 simultaneous calls).
-#   ollama-launch/*           — local ollama + Ollama Cloud. Cloud models are the default
-#                                for chat/agent work; local models only for offline/cheap
-#                                structured output (bakeoff, vision, etc.).
-#   custom:minimax-m3:cloud   — primary chat model. Default for interactive Telegram
-#                                sessions. (Note: agentic-heavy work goes to fcc.)
+# Provider notes (2026-09-06):
+#   ollama-launch/*           — Ollama Cloud is the ONLY provider for agent work.
+#                               NVIDIA NIM retired 2026-07-20; OpenRouter retired
+#                               2026-07-29; kimi-k3 retired 2026-09-06 (404d server-side).
+#   custom (fcc proxy :8082)  — coding work goes through the fcc harness; per-tier
+#                               models live in ~/.fcc/.env (MODEL / MODEL_OPUS /
+#                               MODEL_SONNET / MODEL_HAIKU), NOT here.
+#   x_search:grok-4.20-reasoning — X/Twitter search tool only; not agent routing.
 
 task_routing:
 
   # ─── Cron jobs (no human in loop, time-bounded) ────────────────────────
   cron:default: &cron_default
-    model: glm-5.2:cloud
+    model: glm-5.3-flash:cloud
     provider: ollama-launch
     skills: []            # cron jobs attach their own skill via the job config
     toolsets: [terminal, file]
     fallback:
       - provider: ollama-launch
-        model: kimi-k2.6:cloud
-      - provider: ollama-launch
-        model: qwen3.5:cloud
-      - provider: nvidia
-        model: deepseek-ai/deepseek-v4-flash
-    notes: |
-      Ollama Cloud is 4-6x more credit-efficient than proprietary APIs.
-      Use glm-5.2:cloud as the primary workhorse for cron. Fallback chain
-      keeps Ollama cloud options first, then NVIDIA for rate-limit relief.
-
-  cron:heavy:
-    model: glm-5.2:cloud
-    provider: ollama-launch
-    skills: [joe-content-lane]
-    toolsets: [terminal, file]
-    fallback:
-      - provider: ollama-launch
-        model: kimi-k2.6:cloud
-      - provider: nvidia
-        model: deepseek-ai/deepseek-v4-flash
-    notes: |
-      Weekly jobs that need 3-question dialogue (Quadient check-in).
-      glm-5.2:cloud first; falls back through Ollama cloud and NVIDIA.
-
-  # ─── Interactive agent (Telegram / API sessions) ──────────────────────
-  agent:default:
-    model: glm-5.2:cloud
-    provider: ollama-launch
-    skills: [joe-cto-posture]    # voice + tier-routing + posture
-    toolsets: [terminal, file, web, kanban, browser, cronjob]
-    fallback:
+        model: glm-5.3:cloud
       - provider: ollama-launch
         model: kimi-k2.7-code:cloud
       - provider: ollama-launch
-        model: qwen3.5:cloud
-      - provider: nvidia
-        model: deepseek-ai/deepseek-v4-flash
-    notes: |
-      Default Telegram/API sessions route through Ollama Cloud glm-5.2
-      for maximum credit efficiency. Escalates to fcc for multi-step coding
-      work (handled at the agent level).
-
-  # ─── Subagent / fcc delegation ───────────────────────────────────────
-  agent:coding:
-    model: fcc/claude-sonnet-4
-    provider: anthropic
-    skills: [superpowers:writing-plans, superpowers:test-driven-development]
-    toolsets: [terminal, file, web, browser, kanban, gitnexus]
-    fallback: []
-    notes: |
-      Multi-step coding work goes through the fcc harness (port :8082).
-      The fcc proxy handles model selection internally (Opus / Sonnet / Haiku
-      per task). Use delegate_task(goal=..., toolsets=[...]) for all coding
-      work — never code directly in the main agent.
-
-  # ─── Cheap structured output (bakeoffs, parsers, validators) ─────────
-  agent:cheap:
-    model: glm-5.2:cloud
-    provider: ollama-launch
-    skills: []
-    toolsets: [terminal, file]
-    fallback:
+        model: minimax-m3:cloud
+      - provider: ollama-launch
+        model: deepseek-v4-pro:cloud
+      - provider: ollama-launch
+        model: gemma4:cloud
       - provider: ollama-launch
         model: qwen3.5:cloud
       - provider: ollama-launch
         model: gpt-oss:20b-cloud
     notes: |
-      Cheap structured-output tasks now default to glm-5.2:cloud because
-      Ollama Cloud is the most credit-efficient option. qwen3.5 and gpt-oss
-      remain as ultra-cheap fallbacks.
+      Regenerated from ~/.hermes/config.yaml 2026-09-06 (was glm-5.2:cloud, rotted
+      since Jul 29). glm-5.3-flash:cloud is model.default AND cron.model — the
+      workhorse for everything unattended. Fallback chain mirrors config.yaml's
+      fallback_providers exactly (all Ollama Cloud, no NVIDIA).
+
+  cron:heavy:
+    model: glm-5.3-flash:cloud
+    provider: ollama-launch
+    skills: [joe-content-lane]
+    toolsets: [terminal, file]
+    fallback:
+      - provider: ollama-launch
+        model: glm-5.3:cloud
+      - provider: ollama-launch
+        model: kimi-k2.7-code:cloud
+    notes: |
+      Weekly jobs that need dialogue-grade output (Quadient check-in class).
+      Same model as cron:default now; the tier only differs by skills/toolsets.
+
+  # ─── Interactive agent (Telegram / API sessions) ──────────────────────
+  agent:default:
+    model: glm-5.3-flash:cloud
+    provider: ollama-launch
+    skills: [joe-cto-posture]    # voice + tier-routing + posture
+    toolsets: [terminal, file, web, kanban, browser, cronjob]
+    fallback:
+      - provider: ollama-launch
+        model: glm-5.3:cloud
+      - provider: ollama-launch
+        model: kimi-k2.7-code:cloud
+      - provider: ollama-launch
+        model: minimax-m3:cloud
+      - provider: ollama-launch
+        model: deepseek-v4-pro:cloud
+      - provider: ollama-launch
+        model: gemma4:cloud
+      - provider: ollama-launch
+        model: qwen3.5:cloud
+      - provider: ollama-launch
+        model: gpt-oss:20b-cloud
+    notes: |
+      Interactive Telegram/API sessions on glm-5.3-flash:cloud (config model.default).
+      Escalates to fcc for multi-step coding work (handled at the agent level).
+      environment_hint in config.yaml carries the Claude-CLI routing rule.
+
+  # ─── Subagent / fcc delegation ───────────────────────────────────────
+  agent:delegation:
+    model: kimi-k2.7-code:cloud
+    provider: ollama-launch
+    skills: [fcc-agent]
+    toolsets: [terminal, file, web]
+    fallback:
+      - provider: ollama-launch
+        model: glm-5.3:cloud
+    notes: |
+      config.yaml delegation.model = kimi-k2.7-code:cloud. Per-agent overrides live
+      in ~/.hermes/delegation/agents/REGISTRY.yaml (glm-5.3 ×6, qwen3.5 ×2, one each
+      kimi-k2.7-code, minimax-m3, gpt-oss:20b, devstral-small-2, deepseek-v4-pro,
+      qwen3-coder-next). Goal-mode judge = same model family, JUDGE_MODEL in
+      goal-mode.sh (maker/judge separation preserved: maker is glm-5.3 family).
+
+  agent:coding:
+    model: fcc/claude-sonnet-4
+    provider: fcc-proxy
+    skills: [superpowers:writing-plans, superpowers:test-driven-development]
+    toolsets: [terminal, file, web, browser, kanban, gitnexus]
+    fallback: []
+    notes: |
+      Multi-step coding work goes through the fcc harness (port :8082). "Model"
+      per tier comes from ~/.fcc/.env: MODEL=ollama/glm-5.3:cloud,
+      MODEL_OPUS=ollama/glm-5.3:cloud, MODEL_SONNET=ollama/kimi-k2.7-code:cloud
+      (was kimi-k3:cloud — 404s, fixed 2026-09-06),
+      MODEL_HAIKU=ollama/deepseek-v4-flash:cloud. Use
+      delegate_task(goal=..., toolsets=[...]) for all coding work — never code
+      directly in the main agent.
+
+  # ─── Cheap structured output (bakeoffs, parsers, validators) ─────────
+  agent:cheap:
+    model: glm-5.3-flash:cloud
+    provider: ollama-launch
+    skills: []
+    toolsets: [terminal, file]
+    fallback:
+      - provider: ollama-launch
+        model: gemma4:cloud
+      - provider: ollama-launch
+        model: qwen3.5:cloud
+      - provider: ollama-launch
+        model: gpt-oss:20b-cloud
+    notes: |
+      Cheap structured-output tasks on the default flash model. gemma4/qwen3.5/
+      gpt-oss remain as ultra-cheap fallbacks. The paused local_model_bakeoff_weekly
+      is the only job still pinned to glm-5.2:cloud — intentionally left (bench tier).
 
 # ─── Live binding (read-only, generated) ──────────────────────────────
 # These are mirrored from ~/.hermes/config.yaml and the cron job configs.
 # Source of truth for these still lives there; this is documentation.
 live_bindings:
-  config_yaml: 02-routing/hermes-config.yaml          # symlink
-  cron_jobs:   02-routing/cron-jobs.json              # symlink
-  fallback_chain: 02-routing/hermes-config.yaml#fallback_providers
+  config_yaml: ~/.hermes/config.yaml
+  fcc_env:     ~/.fcc/.env
+  cron_jobs:   ~/.hermes/cron/jobs.json
+  delegation_registry: ~/.hermes/delegation/agents/REGISTRY.yaml
+  fallback_chain: ~/.hermes/config.yaml#fallback_providers
+  verified: 2026-09-06
 
 # ─── Cron → tier (derived from ~/.hermes/cron/jobs.json) ─────────────
-# Regenerated 2026-07-28. Each job pins its own model: field — this table is
-# the readable mirror, not the source of truth. Read jobs.json before trusting
-# it. Tier rule: judgement work runs on the reasoning model, execution work on
-# the code model, reflex checks on the cheap model.
+# Regenerated 2026-09-06 from live jobs.json (46 jobs: 30 pinned
+# glm-5.3-flash:cloud, 15 inherit → cron:default, 1 bench). Tier rule:
+# judgement work runs the reasoning model, execution work the code model,
+# reflex checks the cheap model. All tiers currently share glm-5.3-flash:cloud;
+# the distinction survives in case tiers diverge again.
 cron_to_routing:
 
-  # judgement: glm-5.2:cloud — reasoning, strategy, review
+  # judgement: glm-5.3-flash:cloud — reasoning, strategy, review
   cmo_weekly_review:              judgement
   cos_daily_standup:              judgement
   evening_plan:                   judgement
@@ -132,7 +173,7 @@ cron_to_routing:
   vp_product_monthly_review:      judgement
   weekly-job-search-sweep:        judgement
 
-  # execution: kimi-k2.7-code:cloud — drafting, code, outbound
+  # execution: glm-5.3-flash:cloud — drafting, code, outbound
   "Quadient Weekly Check-in":     execution
   cfo_monthly_expense_scan:       execution
   content_draft:                  execution
@@ -140,24 +181,24 @@ cron_to_routing:
   jts_weekly_success_report:      execution
   renfaire_content_draft:         execution
 
-  # reflex: gemma4:cloud — cheap recurring checks
+  # reflex: glm-5.3-flash:cloud — cheap recurring checks
   ig_auto_reply:                  reflex
   jts_cold_email_reply_check:     reflex
-  spend_caps_enforcement:         reflex
   vp_infrastructure_daily_health: reflex
 
-  # bench: deepseek-v4-flash:cloud — benchmark harness only
+  # bench: glm-5.2:cloud — benchmark harness only (job paused)
   local_model_bakeoff_weekly:     bench
 
-  # inherit: no pin — inherits model.default (glm-5.2:cloud)
+  # inherit: no pin — inherits cron.model (glm-5.3-flash:cloud)
   # (cron-failure-watch is no_agent: a script, no model, no tokens. It alerts
   #  on any job whose run was not ok and re-arms transient failures once.)
+  # NOTE: spend_caps_enforcement and kimi-k3-tier-watch no longer exist —
+  # removed from this table 2026-09-06 after jobs.json scan.
   agent_scorecard:                inherit
   cron-failure-watch:             inherit
   daily-update-check:             inherit
   fcc-upstream-tracker:           inherit
   gritt-email-watch:              inherit
-  kimi-k3-tier-watch:             inherit
   skillopt-sleep-nightly:         inherit
   skillspector_weekly_scan:       inherit
   weekly-config-sync:             inherit
@@ -165,7 +206,10 @@ cron_to_routing:
 
 # ─── Migration cheatsheet ────────────────────────────────────────────
 # When a model dies, the change is:
-#   1. Update providers: section in ~/.hermes/config.yaml
-#   2. Update this file (or just the cron_jobs JSON, if it's a cron change)
-#   3. Restart: systemctl --user restart hermes-gateway
-#   4. Verify: bash ~/hermes-health.sh
+#   1. Update providers: section in ~/.hermes/config.yaml (via `hermes config set`
+#      — the patch/file-write tool REFUSES to touch config.yaml)
+#   2. Update this file + ~/.fcc/.env tier vars if fcc tiers are affected
+#   3. Update cron job models via cronjob_manage, and any model_snapshot values
+#   4. Restart: python3 setsid wrapper for `systemctl --user restart hermes-gateway`
+#      (in-session restart is blocked; see Lurkr wake-up rule 2)
+#   5. Verify: probe a model with a 1-token request — config pins ≠ served models
